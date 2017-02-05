@@ -26,12 +26,12 @@ class Crawler():
         ''' Clean comma and spaces '''
         for index, content in enumerate(row):
             row[index] = re.sub(",", "", content.strip())
-            row[index] = filter(lambda x: x in string.printable, row[index])
+            row[index] = "".join([x for x in row[index] if x in string.printable])
         return row
 
     def _record(self, stock_id, row):
         ''' Save row to csv file '''
-        f = open('{}/{}.csv'.format(self.prefix, stock_id), 'ab')
+        f = open('{}/{}.csv'.format(self.prefix, stock_id), 'a')
         cw = csv.writer(f, lineterminator='\n')
         cw.writerow(row)
         f.close()
@@ -58,8 +58,8 @@ class Crawler():
             tds = tr.xpath('td/text()')
 
             sign = tr.xpath('td/font/text()')
-            sign = '-' if len(sign) == 1 and sign[0] == u'－' else ''
-            
+            sign = '-' if len(sign) == 1 and sign[0] == '－' else ''
+
             row = self._clean_row([
                 date_str, # 日期
                 tds[2], # 成交股數
@@ -107,7 +107,7 @@ class Crawler():
 
     def get_data(self, year, month, day):
         date_str = '{0}/{1:02d}/{2:02d}'.format(year - 1911, month, day)
-        print 'Crawling {}'.format(date_str)
+        print('Crawling {}'.format(date_str))
         self._get_tse_data(date_str)
         self._get_otc_data(date_str)
 
@@ -151,7 +151,7 @@ def main():
         last_day = datetime(2004, 2, 11) if args.back else first_day - timedelta(10)
         max_error = 5
         error_times = 0
-        
+
         while error_times < max_error and first_day >= last_day:
             try:
                 crawler.get_data(first_day.year, first_day.month, first_day.day)
